@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require("bcrypt");
 
 const userSchema = new mongoose.Schema({
-    name: {type: String, required: true, minlength: 3},
+    firstname: {type: String, required: true, minlength: 3},
     lastname: {type: String, required: true, minlength: 3},
     dateOfBirth: {type: Date},
     email: {type: String, required: true, unique: true},
@@ -15,20 +15,22 @@ const userSchema = new mongoose.Schema({
 
 });
 
-userSchema.pre("save", () => {
+userSchema.pre("save", function(next){
     const saltRounds = 10;
     bcrypt.genSalt(saltRounds, (err, salt) => {
         if(err){
             console.log("Error generating salt: ", err);
-            return;
+            return next(err);
         }
 
         bcrypt.hash(this.password, salt, (err, hashedPassword) => {
             if(err){
                 console.log("Error hashing password: ", err);
-                return;
+                return next(err);
             }
              this.password=hashedPassword;
+             next();
+             
         })
     })
     

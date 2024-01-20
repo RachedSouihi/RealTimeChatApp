@@ -32,10 +32,6 @@ import './App.css'
 import AvatarEditor from 'react-avatar-editor';
 import { useUserData } from './userDataContext';
 
-
-
-
-
 const allFields = [['firstName', 'lastName', 'country'], ['email', 'emailConf', 'password', 'passwordConf']];
 
 
@@ -97,7 +93,7 @@ export default function HomePage() {
 
         onSubmit: (values) => {
             // Handle form submission
-            setActiveStep(2)
+            
             fetch("http://127.0.0.1:5000/confirmAccount", {
                 method: "POST",
                 headers: {
@@ -183,6 +179,7 @@ export default function HomePage() {
 
 
     const sendVerificationCode = () => {
+        setActiveStep(2)
         fetch('http://127.0.0.1:5000/sendVerifCode', {
             method: 'POST',
             headers: {
@@ -343,7 +340,6 @@ export default function HomePage() {
                     }}>
                         <img src={logo} alt="logo" style={{ display: 'block', maxWidth: '120px' }} />
                     </Box>
-
 
                 </AppBar>
                 <Grid item container >

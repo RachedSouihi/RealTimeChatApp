@@ -3,20 +3,22 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken')
 const nodemailer = require('nodemailer');
 require('dotenv').config();
+const client = require('./connectionDB')
 const bcrypt = require("bcrypt");
 //const crypto = require('crypto')
 const app = express();
 app.use(cors());
 app.use(express.json())
+app.use(express.json({ limit: '100mb' }));
 const server = require('http').createServer(app);
 const socketIO = require('socket.io');
-const mongoose= require('mongoose');
+const mongoose = require('mongoose');
 const User = require('./userModel');
 //const secretKey = crypto.randomBytes(32).toString('hex');
-const secretKey = process.env;
+const SEKRET_KEY = "bce7af47ea961298fed4bc2d358aea02a5021780a1d132cc9eee26b3ca9494b7"
 
-mongoose.connect("mongodb+srv://RachedSouihi:RachedInformatik12426190863314522613mongodb@cluster0.odiiv58.mongodb.net/RealTimeChatApp?retryWrites=true&w=majority", {dbName: "RealTimeChatApp"});
-app.post('/insertNewUser', async(req, res) => {
+mongoose.connect("mongodb+srv://RachedSouihi:RachedInformatik12426190863314522613mongodb@cluster0.odiiv58.mongodb.net/RealTimeChatApp?retryWrites=true&w=majority", { dbName: "RealTimeChatApp" });
+app.post('/insertNewUser', async (req, res) => {
   const data = req.body;
   const saltRounds = 10;
   bcrypt.genSalt(saltRounds, (err, salt) => {
@@ -33,21 +35,21 @@ app.post('/insertNewUser', async(req, res) => {
       console.log('Hashed password:', hashedPassword);
     })
   })
-  
+
 })
 
 
 app.get("/compare", (req, res) => {
-  const {password} = req.query
+  const { password } = req.query
   bcrypt.compare(password, "$2b$10$GRt4oT8RhMD1g3KAi9h.uO9zjQyA43obAuzPZIuJ7/xYnlkYv.a8G", (err, result) => {
-    if(err){
+    if (err) {
       console.log("Error comparing password: ", err);
       return;
     }
 
-    if(result){
+    if (result) {
       console.log("OK")
-    }else{
+    } else {
       console.log("!!!")
     }
 
@@ -60,29 +62,36 @@ app.get("/compare", (req, res) => {
 
 
 app.post("/confirmAccount", (req, res) => {
-  const  data  = req.body;
+  const data = req.body;
+  console.log(data)
   jwt.verify(data.token, SEKRET_KEY, (err, decoded) => {
-    if(err){
-      res.status(401).json({message: 'Invalide verification code', tokenDone: true, success: false})
-     
-    }else{
-      if(decoded.number === data.number){
+    if (err) {
+      res.status(401).json({ message: 'Invalide verification code', tokenDone: true, success: false })
+
+    } else {
+      if (decoded.number === data.number) {
         const user = new User({
-          name: data.name,
-          lastname: data.lastname,
+          firstname: data.firstName,
+          lastname: data.lastName,
           email: data.email,
           password: data.password,
-          dailingCode: data.dailingCode,
+          dailingCode: data.dialingCode,
           country: data.country,
-          aboutYourself: data.aboutYourself
-
-          
+          aboutYourself: data.aboutYourself,
         })
 
-        user.save();
-        res.status(200).json({message: "Verfication seccessfull", tokenDone: false,  success: true})
-      }else{
-        res.status(400).json({message: "Number doesn't match!, try again", tokenDone: false, success: false})
+        user.save()
+          .then((result) => {
+            
+            res.status(200).json({ message: "Verfication seccessfull", tokenDone: false, success: true })
+          })
+          .catch(err => {
+            console.log(err);
+            res.status(200).json({ message: "Verfication failed", tokenDone: false, success: false })
+          })
+
+      } else {
+        res.status(400).json({ message: "Number doesn't match!, try again", tokenDone: false, success: false })
       }
     }
   })
@@ -90,7 +99,7 @@ app.post("/confirmAccount", (req, res) => {
 })
 
 app.post('/sendVerifCode', (req, res) => {
-  token = jwt.sign({number: 242619}, secretKey, {
+  token = jwt.sign({ number: 242619 }, SEKRET_KEY, {
     expiresIn: '1.5m'
   })
   /*const { email } = req.body
@@ -122,6 +131,18 @@ app.post('/sendVerifCode', (req, res) => {
   });*/
 
   res.json({ message: 'Verification code sent to your email', token: token })
+})
+
+
+app.post('/updateProfilePic', (req, res) => {
+  const {email, ...imageData} = req.body
+ 
+  
+  imageData.picture = Buffer.from(imageData.picture, "base64");
+  client.db('RealTimeChatApp').collection('users').updateOne({email: email},{$set: imageData})
+
+
+
 })
 
 
