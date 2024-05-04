@@ -106,8 +106,8 @@ app.post('/sendVerifCode', (req, res) => {
     port: 587,
     secure: false,
     auth: {
-      user: 'souihirached@istic.u-carthage.tn',                  
-      pass: 'a6waBeF*xn'
+      user: '',                  
+      pass: ''
     }
   })
 
