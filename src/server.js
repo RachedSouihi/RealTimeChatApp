@@ -15,9 +15,7 @@ const socketIO = require('socket.io');
 const mongoose = require('mongoose');
 const User = require('./userModel');
 //const secretKey = crypto.randomBytes(32).toString('hex');
-const SEKRET_KEY = "bce7af47ea961298fed4bc2d358aea02a5021780a1d132cc9eee26b3ca9494b7"
 
-mongoose.connect("mongodb+srv://RachedSouihi:RachedInformatik12426190863314522613mongodb@cluster0.odiiv58.mongodb.net/RealTimeChatApp?retryWrites=true&w=majority", { dbName: "RealTimeChatApp" });
 app.post('/insertNewUser', async (req, res) => {
   const data = req.body;
   const saltRounds = 10;
